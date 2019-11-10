@@ -1,0 +1,138 @@
+#### neo4j notes 
+
+#########################
+# some basics ###########
+#########################
+
+//0 query for nodes
+MATCH(anything) RETURN anything LIMIT 5
+
+
+//1 match relationship 
+MATCH (actor:Person)-[rel:ACTED_IN | DIRECTED]->(movie:Movie) 
+RETURN actor,rel,movie LIMIT 5
+
+
+//2 multiple matches and optional match 
+Match(movie:Movie) 
+Match(director:Person)-[:DIRECTED]->(movie)
+Match(director)-[:ACTED_IN]->(movie)
+RETURN movie.title,director.name
+
+
+// exercies : a person has a contact and his contact has another contact 
+MATCH (p1:Person)-[:HAS_CONTACT]->(p2:Person)-[:HAS_CONTACT]->(p3:Person)
+WHERE p1<>p3
+RETURN p1,p2,p3
+LIMIT 4
+
+// exercise : list a contact's name along with a movie they directed if they directed one
+
+MATCH (p1:Person)-[:HAS_CONTACT]->(p2:Person)
+OPTIONAL MATCH(p2)-[:DIRECTED]->(movie:Movie)
+RETURN p1.name, p2.name,movie.title
+LIMIT 20
+
+
+###########################################
+### query with propertiles filting data ###
+###########################################
+
+// basics property match 
+MATCH(tom{name:'Tom Hanks',born:1956})
+RETURN tom
+LIMIT 1
+
+// you can also do where to achieve the same function 
+MATCH(tom:Person)
+WHERE tom.name = 'Tom Hanks' AND tom.born = 1956
+RETURN tom
+LIMIT 1
+
+// other filtering functions 
+MATCH(someone:Person)
+WHERE someone.born > 1956 // you can also ues <> etc
+RETURN someone
+LIMIT 10
+
+// filter on text ： name just start with T 
+MATCH(someone:Person)
+WHERE someone.name >= 'T' AND someone.name <='U'
+RETURN someone
+LIMIT 10
+
+//  number filering 
+MATCH(someone:Person)
+WHERE someone.born >= 1950 And someone.born <= 1970 // or use IN [1956,1957,1958]
+RETURN someone
+
+// boolean operator with paths (relationships)
+MATCH(person:Person)-->(movie:Movie)
+WHERE movie.title = 'Unforgiven' AND NOT(person)-[:DIRECTED]->(movie)
+RETURN person, movie
+
+
+// use regular expression 
+MATCH(movie:Movie)
+WHERE movie.title=~"(?i).*The .*"//use regular expression have more than 0 anything (case insensitive)
+RETURN movie.title
+
+
+// ordering results and limit; skip for paging
+MATCH(actor:Person)-[role:ACTED_IN]->(movie:Movie)
+WHERE movie.title = 'Top Gun'
+RETURN actor.name AS Name,role.earnings AS Earned
+ORDER BY role.earnings DESC
+SKIP 3
+LIMIT 3
+
+
+
+*********************************
+** how to process after return  **
+**********************************
+
+// only return distinct results
+MATCH(actor:Person)-[role:ACTED_IN]->(movie:Movie)
+WHERE role.earnings> 10000000
+RETURN DISTINCT actor.name
+
+// simple aggregations (count)
+MATCH(tom:Person{name:'Tom Hanks'})-[role:ACTED_IN]->(movie:Movie)
+RETURN COUNT(movie)
+
+// simple aggregation (sum)
+MATCH(tom:Person{name:'Tom Hanks'})-[role:ACTED_IN]->(movie:Movie)
+RETURN SUM(role.earnings) AS total_earning, MIN(role.earnings) AS min_earning  // also AVERAGE MINIUM max etc 
+
+
+
+****************************
+*** functions ******
+**************************
+
+// string function 
+RETURN toString(1.5), toString(TRUE), toString('already a string')
+RETURN replace(toUpper('oh my god'),'G','T')  // string replace and other function 
+
+//math function 
+
+
+
+**************
+** exercise **
+**************
+
+MATCH (tom:Person{name:'Tom Hanks'})
+MATCH(tom)-[:HAS_CONTACT]->(perosn:Person)
+MATCH(person)-[role:ACTED_IN]->(movie)
+WHERE person.born >=1960 AND role.earnings>10000000
+RETURN person.name AS ConteactName, person.born AS Born, role.earnings
+ORDER BY  role.earnings DESC
+
+
+
+
+
+
+
