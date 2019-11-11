@@ -116,6 +116,67 @@ RETURN toString(1.5), toString(TRUE), toString('already a string')
 RETURN replace(toUpper('oh my god'),'G','T')  // string replace and other function 
 
 //math function 
+RETURN floor(0.9) // return fool integer number 
+RETURN ceil(0.9)	
+RETURN round(0.9)
+
+
+
+
+
+*****************************************
+*** Create nodes and relationships ******
+*****************************************
+
+// create nodes
+CREATE() // create an empty node 
+CREATE(:Cat:Animal) // create a node with property Cat and animal 
+CREATE(:Cat:Animal{sound:'Meow',eats:'fish'})
+CREATE(cat:Cat{name:'Fluffy'})-[:GROOMS{period:'Daily'}]->(cat) //create a node with relationship with itself
+
+MATCH(node)
+RETURN node
+
+// edit existing nodes
+CREATE(joe:Bunny:Animal{name:'Joe Bunny'}),
+(sarah:Bunny:Animal{name:'Sarah Bunny'})
+
+MATCH(joe:Bunny{name:'Joe Bunny'}),(sarah:Bunny{name:'Sarah Bunny'})
+MERGE(joe)-[:LIKES]->(sarah)  // use merge to edit relationship
+MERGE(joe)<-[:LIKES]-(sarah)
+RETURN joe, sarah
+
+// you can use merge to create nodes as well
+MATCH(sarah:Bunny{name:'Sarah Bunny'})
+MERGE(foxy:Fox:Animal{name:'Foxy Fox'})-[:LIKES]->(sarah)
+RETURN sarah,foxy
+
+
+// delete nodes
+// Delete everything
+MATCH (n) DETACH DELETE n;
+
+//
+MATCH(node)
+OPTIONAL MATCH (node)-[rel]-()
+DELETE node, rel
+
+// exercise remove all relationship with TOM Hanks
+MATCH(tom:Person{name:'Tom Hanks'}),
+(other)-[rel:HAS_CONTACT]->(tom)
+DELETE rel
+
+// delete one node and all its relationships
+MATCH(movie:Movie{title: 'The Da Vinci Code'})
+DETACH DELETE movie
+
+
+**************************
+*** Set properties  ******
+**************************
+
+
+
 
 
 
@@ -123,6 +184,7 @@ RETURN replace(toUpper('oh my god'),'G','T')  // string replace and other functi
 ** exercise **
 **************
 
+// exercise 1 
 MATCH (tom:Person{name:'Tom Hanks'})
 MATCH(tom)-[:HAS_CONTACT]->(perosn:Person)
 MATCH(person)-[role:ACTED_IN]->(movie)
@@ -130,7 +192,11 @@ WHERE person.born >=1960 AND role.earnings>10000000
 RETURN person.name AS ConteactName, person.born AS Born, role.earnings
 ORDER BY  role.earnings DESC
 
-
+// exercise 2
+CREATE (movie:Movie{title:'The Hateful Eight'}),
+(quentin:Person{name:'Quentin Tarantino'}),
+(quentin)-[:DIRECTED]->(movie)
+RETURN quentin,movie
 
 
 
